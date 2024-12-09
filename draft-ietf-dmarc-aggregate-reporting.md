@@ -127,64 +127,278 @@ The report may include the following data:
 *  The counts of messages based on all messages received, even if
    their delivery is ultimately blocked by other filtering agents.
 
-The format for these reports is defined in Appendix A.
+Each report MUST contain data for only one Policy Domain. A single
+report MUST contain data for one policy configuration.  If multiple
+configurations were observed during a single reporting period, a
+reporting entity MAY choose to send multiple reports, otherwise the
+reporting entity SHOULD note only the final configuration observed
+during the period. See below for further information.
 
-DMARC Aggregate Reports MUST contain two primary sections ("metadata" & "data"
-below) ; one consisting of descriptive information (with two elements), 
-and the other a set of IP address-focused row-based data.  Each report MUST 
-contain data for only one Policy Domain. A single report MUST contain data 
-for one policy configuration.  If multiple configurations were observed 
-during a single reporting period, a reporting entity MAY choose to send 
-multiple reports, otherwise the reporting entity SHOULD note only the final 
-configuration observed during the period. See below for further information.
+### Description of the content XML file
 
-The informative section MUST contain two elements.  One will be the metadata 
-section which MUST contain the fields related to "org_name", "email",
-"report_id", and "date_range". Optional fields MAY include 
-"extra_contact_info", an "error" field.  The "date_range" field will 
-contain "begin" and "end" fields as epoch timestamps. The other element will 
-be the "policy_published", which will record the policy configuration observed by 
-the receiving system.  Mandatory fields are "domain", "p", "sp". Optional 
-fields are "fo", "adkim", "aspf", "testing", and "discovery_method".  There 
-MAY be an optional third section, "extension".
+The format for these reports is defined in the XML Schema Definition
+(XSD) in Appendix A.
 
-Within the data section, the report will contain record(s) stating which
-IP addresses were seen to have delivered messages for the Author Domain to the receiving
-system.  For each IP address that is being reported, there will be at least one "record" element.
-Each "record" element will have one "row", one "identifiers", and one "auth_results" 
-sub-element.  Within the "row" element, there MUST be "source_ip" and "count".
-There MUST also exist a "policy_evaluated", with sub-elements of "disposition",
-"dkim", and "spf".  There MAY be an element for "reason", meant to include 
-any notes the reporter might want to include as to why the "disposition" policy
-does not match the "policy_published", such as a Local Policy override (See 
-Section 2.1.5, Policy Override Reason).  The "dkim" and "spf" elements MUST be the 
-evaluated values as they relate to DMARC, not the values the receiver may 
-have used when overriding the policy.  Within the "identifiers" element, there 
-MUST exist the data that was used to apply policy for the given IP address. 
-There MUST be a "header_from" element, which will contain the RFC5322.From 
-domain from the message.  There MAY be an optional "envelope_from" element, 
-which contains the RFC5321.MailFrom domain that the SPF check has been 
-applied to. This element MAY be existing but empty if the message had a null 
-reverse-path ([@!RFC5321], Section 4.5.5). There MAY be an optional 
-"envelope_to" element, which contains the RFC5321.RcptTo (see [@!RFC5598])
-domain from the message.
+DMARC Aggregate Reports have the root element "feedback" with its XML
+namespace set to the DMARC namespace.  It contains up to 5 different
+types of elements, in order: "version", "report_metadata",
+"policy_published", "extension" and "record".
 
-There MUST be an "auth_results" element within the "record" element.  This will
-contain the data related to authenticating the messages associated with this sending
-IP address. There MAY be a number of optional "dkim" sub-elements, one for 
-each checked DKIM  signature.  There MAY be an optional "spf" sub-element.  
-These elements MUST have a "domain" that was used during validation, as well as 
-"result". If validation is attempted for any DKIM signature, the results MUST 
-be included in the report (within reason, see "DKIM Signatures in Aggregate 
-Reports" below for handling numerous signatures).  The "dkim" element MUST 
-include a "selector" element that was observed during validation. For the 
-"spf" element, the "result" element MUST contain a lower-case string where 
-the value is one of the results defined in [@!RFC8601] Section 2.7.2.  The 
-"dkim" result MUST contain a lower-case string where the value is one of 
-the results defined in [@!RFC8601] Section 2.7.1. Both the "spf" and "dkim" 
-results may optionally include a "human_result" element meant for the report
-to convey more descriptive information back to the Domain Owner relating to
-evaluation failures. There MAY exist an optional section for extensions.
+* "version": OPTIONAL;
+
+  MUST have the value 1.0.
+
+* "report_metadata": REQUIRED;
+
+  Must contain Report generator metadata.
+
+  * "org_name": REQUIRED;
+
+    The name of the Reporting Organization.
+
+  * "email": REQUIRED;
+
+    Contact to be used when contacting the Reporting Organization.
+
+  * "extra_contact_info": OPTIONAL;
+
+    Additional contact details.
+
+  * "report_id": REQUIRED;
+
+    Unique Report-ID, see 2.5.1.
+
+  * "date_range": REQUIRED;
+
+    The time range in UTC covered by messages in this report.
+
+    Must contain the elements "begin" and "end" as epoch timestamps.
+
+    * "begin": REQUIRED;
+
+      Start of the reporting period.
+
+    * "end": REQUIRED;
+
+      End of the reporting period.
+
+  * "error": OPTIONAL;
+
+    Error messages encountered when processing the DMARC Policy Record.
+
+  * "generator": OPTIONAL;
+
+    Must contain the name of the software involved;
+    helps the Report Consumer in where to report bugs.
+
+* "policy_published": REQUIRED;
+
+  Records the DMARC Policy Record configuration observed by the
+  receiving system; including any default values.
+
+  REQUIRED elements are "domain", "p", "sp".
+  OPTIONAL elements are "np", "fo", "adkim", "aspf", "testing", and "discovery_method".
+
+  * "domain": REQUIRED;
+
+     Must contain the Policy Domain the report is about.
+
+  * "discovery_method": OPTIONAL;
+
+    Must contain the method used to discover the DMARC Policy Record
+    during evaluation.  The available values are "psl" and "treewalk",
+    where "psl" is the method from [@?RFC7489] and the "treewalk"
+    is described in [@!I-D.ietf-dmarc-dmarcbis].
+
+  The rest of the elements must contain the discovered or default
+  value for the DMARC Policy Record applied.
+
+  * "p": REQUIRED;
+  * "sp": REQUIRED;
+  * "np": OPTIONAL;
+
+    Must contain a valid policy action.
+
+  * "fo": OPTIONAL
+
+    Must contain the value for the failure reporting options.
+
+  * "adkim": OPTIONAL;
+  * "aspf": OPTIONAL;
+
+    Must contain the DKIM or SPF Identifier Alignment mode.
+
+  * "testing":
+
+    Must contain the value of the "t" tag.
+
+* "extension": OPTIONAL;
+
+  Content not specified; provides for future extensibility.
+
+* "record": REQUIRED;
+
+  The report MUST contain record(s) stating which IP addresses were
+  seen to have delivered messages for the Author Domain to the
+  receiving system.  For each IP address that is being reported,
+  there will be at least one "record" element.
+
+  An unlimited number of "record" elements may be specified, but
+  at least one is REQUIRED. Each "record" element contains,
+  in order: "row", "identifiers", "auth_results".  Extensions may
+  cause other elements to be added to the end of the record.
+
+  Fixme: say something about tuples.
+
+  * "row": REQUIRED;
+
+    Must contain the details of the connecting system, and how many
+    e-mails was received from it, for that particular combination
+    of the policy evaluated.
+
+    MUST contains three elements, in order: "source_ip", "count",
+    and "policy_evaluated"
+
+    * "source_ip": REQUIRED
+
+      The connecting IP. IPv4address or IPv6address as defined in
+      RFC 3986 section 3.2.2
+
+    * "count": REQUIRED
+
+      Number of messages for which the "policy_evaluated" was applied.
+
+    * "policy_evaluated": REQUIRED
+
+      The DMARC disposition applied to matching messages.
+
+      Must contain three elements, in order: "disposition", "dkim",
+      and "spf", then one or more OPTIONAL "reason" elements.
+
+      * "disposition": REQUIRED;
+
+        Must contain the result of applying the DMARC Policy
+
+      * "dkim": REQUIRED;
+      * "spf": REQUIRED;
+
+        The result of the respective DMARC Identifier alignment test.
+
+        MUST be the evaluated values as they relate to DMARC, not the
+        values the receiver may have used when overriding the policy.
+
+      * "reason": OPTIONAL;
+
+        An unlimited number of "reason" elements may be included.
+        These are meant to include any notes the reporter might want
+        to include as to why the "disposition" policy does not match
+        the "policy_published", such as a Local Policy override
+        (See Section 2.1.5, Policy Override Reason).
+
+        MUST be included if alignment fails and the policy applied
+        does not match the Policy Domains configured policy.
+
+        * "type": REQUIRED;
+
+          Must contain the reason the DMARC Policy was overridden.
+
+        * "comment": OPTIONAL;
+
+          Must contain further details if available
+
+  * "identifiers": REQUIRED
+
+    MUST contain the data that was used to apply policy for the given
+    "row".
+
+    Must contains the identifiers associated with the e-mail messages
+    that is the basis for the record.
+
+    * header_from": REQUIRED
+
+      Must contain the RFC5322.From domain from the message.
+
+    * "envelope_from": OPTIONAL;
+
+      Must contain the RFC5321.MailFrom domain that the SPF check has
+      been applied to.  This element MAY be existing but empty if the
+      message had a null reverse-path ([@!RFC5321], Section 4.5.5).
+
+    * "envelope_to": OPTIONAL;
+
+      Must contain the RFC5321.RcptTo domain from the message.
+
+  * "auth_results": REQUIRED;
+
+    Must contain the data related to authenticating the messages
+    associated with this sending IP address.
+
+    Contains the elements "dkim" and "spf".
+    Contains, in order, an optional unlimited number of "dkim" elements,
+    then an optional "spf"
+
+    * "dkim": OPTIONAL;
+
+      There MAY be a number of optional "dkim" sub-elements, one for each checked DKIM signature.
+
+      If validation is attempted for any DKIM signature, the results
+      MUST be included in the report (within reason, see "DKIM
+      Signatures in Aggregate Reports" below for handling numerous
+      signatures).
+
+      * "domain": REQUIRED;
+
+        The domain that was used during validation.
+        (the "d=" parameter in the signature)
+
+      * "selector": REQUIRED;
+
+        The selector that was observed during validation.
+
+      * "result": REQUIRED;
+
+        DKIM verification result
+
+        Must contain a lower-case string where the value is one
+        of the results defined in [@!RFC8601] Section 2.7.1.
+
+      * "human_result": OPTIONAL;
+
+        Must contain more descriptive information to the Domain
+        Owner relating to evaluation failures.
+
+    * "spf": OPTIONAL;
+
+      There MAY be an optional "spf" sub-element.
+
+      * "domain": REQUIRED;
+
+        The domain that was used during validation.
+
+      * "scope": OPTIONAL;
+
+        The source of the domain used during validation.
+
+        Must contain "mfrom" as it is the only valid value.
+
+      * "result": REQUIRED;
+
+        SPF verification result.
+
+        Must contain a lower-case string where the value is one
+        of the results defined in [@!RFC8601] Section 2.7.2.
+
+      * "human_result": OPTIONAL;
+
+        Must contain more descriptive information to the Domain
+        Owner relating to evaluation failures.
+
+  * <any namespaced element>: OPTIONAL;
+
+    Record level elements defined by an extension.
+    Such elements will be namespaced.
+
+    Extensions may cause other elements to be added.
 
 ### Handling Domains in Reports
 
