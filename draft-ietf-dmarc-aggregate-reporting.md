@@ -49,17 +49,31 @@ behalf, and some insight into whether or not the volume may be legitimate.
 These reports expose information relating to the DMARC policy, as well as 
 the outcome of SPF [@!RFC7208] & DKIM [@!RFC6376] validation.
 
-There are a number of terms defined in [@!I-D.ietf-dmarc-dmarcbis] that are used
-within this document.  Understanding those definitions will aid in reading
-this document.
+# Definitions
 
-## Terminology
+## Key Words
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL
 NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED",
 "MAY", and "OPTIONAL" in this document are to be interpreted as
 described in BCP 14 [@!RFC2119] [@!RFC8174] when, and only when, they
 appear in all capitals, as shown here.
+
+## Notation
+
+Certain properties of email messages described in this document are
+referenced using notation found in [@!RFC5598] (e.g., "RFC5322.From").
+
+This specification uses the Augmented Backus-Naur Form (ABNF)
+notation of [@RFC5234].
+
+## Imported Definitions
+
+There are a number of terms defined in [@!I-D.ietf-dmarc-dmarcbis] that are used
+within this document.  Understanding those definitions will aid in reading
+this document.
+
+IPv4address and IPv6address are defined in [@!RFC3986]
 
 # DMARC Feedback
 
