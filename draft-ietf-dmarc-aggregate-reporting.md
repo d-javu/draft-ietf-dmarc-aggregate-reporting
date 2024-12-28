@@ -406,6 +406,75 @@ in order: "version", "report_metadata", "policy_published",
         Use of extensions **MAY** cause elements to be added to the end
         of the record.  Such elements **MUST** be namespaced.
 
+#### Single table version
+
+The first column contains a number indicating the element's depth in the XML hierarchy.
+
+D | Element name       | Required | Description
+--|--------------------|----------|--------------
+0 | feedback           | **REQUIRED** | The XML root element
+1 | version            | **OPTIONAL** | **MUST** have the value 1.0.
+1 | report_metadata    | **REQUIRED** | Report generator metadata.
+2 | org_name           | **REQUIRED** | The name of the Reporting Organization.
+2 | email              | **REQUIRED** | Contact to be used when contacting the Reporting Organization.
+2 | extra_contact_info | **OPTIONAL** | Additional contact details.
+2 | report_id          | **REQUIRED** | Unique Report-ID, see 2.5.1.
+2 | date_range         | **REQUIRED** | The date range in UTC covered by messages in this report.
+3 | begin              | **REQUIRED** | Start of the reporting period in seconds since epoch.
+3 | end                | **REQUIRED** | End of the reporting period in seconds since epoch.
+2 | error              | **OPTIONAL** | Error messages encountered when processing the DMARC Policy Record.
+2 | generator          | **OPTIONAL** | the name of the software involved; helps the Report Consumer in where to report bugs.
+1 | policy_published   | **REQUIRED** | the DMARC Policy Record configuration observed by the receiving system; including any default values.
+2 | domain             | **REQUIRED** | the Policy Domain the report is about.
+2 | discovery_method   | **OPTIONAL** | the method used to discover the DMARC Policy Record during evaluation.  The available values are "psl" and "treewalk", where "psl" is the method from [@?RFC7489] and the "treewalk" is described in [@!I-D.ietf-dmarc-dmarcbis].
+2 | p                  | **REQUIRED** | a valid policy action.
+2 | sp                 | **REQUIRED** | a valid policy action.
+2 | np                 | **OPTIONAL** | a valid policy action.
+2 | fo                 | **OPTIONAL** | the value for the failure reporting options.
+2 | adkim              | **OPTIONAL** | the DKIM Identifier Alignment mode.
+2 | aspf               | **OPTIONAL** | the SPF Identifier Alignment mode.
+2 | testing            | **OPTIONAL** | the value of the "t" tag.
+1 | extension          | **OPTIONAL** | Content not specified; provides for future extensibility.
+1 | record             | **REQUIRED** | **MUST** contain record(s) stating which IP addresses were seen to have delivered messages for the Author Domain to the receiving system.  For each IP address that is being reported, there will be at least one "record" element.
+2 | row                | **REQUIRED** | the details of the connecting system, and how many e-mails was received from it, for that particular combination of the policy evaluated.
+3 | source_ip          | **REQUIRED** | The connecting IP. IPv4address or IPv6address as defined in RFC 3986 section 3.2.2
+3 | count              | **REQUIRED** | Number of messages for which the "policy_evaluated" was applied.
+3 | policy_evaluated   | **REQUIRED** | The DMARC disposition applied to matching messages.
+4 | disposition        | **REQUIRED** | the result of applying the DMARC Policy
+4 | dkim               | **REQUIRED** | The result of the DKIM DMARC Identifier alignment test.
+4 | spf                | **REQUIRED** | The result of the SPF DMARC Identifier alignment test.
+4 | reason             | **OPTIONAL** | An unlimited number of "reason" elements may be included.  These are meant to include any notes the reporter might want to include as to why the "disposition" policy does not match the "policy_published", such as a Local Policy override (See Section 2.1.5, Policy Override Reason).  **MUST** be included if alignment fails and the policy applied does not match the Policy Domains configured policy.
+5 | type               | **REQUIRED** | the reason the DMARC Policy was overridden.
+5 | comment            | **OPTIONAL** | further details if available
+2 | identifiers        | **REQUIRED** | **MUST** contain the data that was used to apply policy for the given "row".  the identifiers associated with the e-mail messages that is the basis for the record.
+3 | header_from        | **REQUIRED** | the RFC5322.From domain from the message.
+3 | envelope_from      | **OPTIONAL** | the RFC5321.MailFrom domain that the SPF check has been applied to.  This element MAY be existing but empty if the message had a null reverse-path ([@!RFC5321], Section 4.5.5).
+3 | envelope_to        | **OPTIONAL** | the RFC5321.RcptTo domain from the message.
+2 | auth_results       | **REQUIRED** | the data related to authenticating the messages associated with this sending IP address.  Contains, in order, an optional unlimited number of "dkim" elements, then an optional "spf" element.
+3 | dkim               | **OPTIONAL** | There MAY be a number of optional "dkim" elements, one for each checked DKIM signature.
+4 | domain             | **REQUIRED** | The domain that was used during validation.  (the "d=" parameter in the signature)
+4 | selector           | **REQUIRED** | The selector that was observed during validation.  (the "s=" parameter in the signature)
+4 | result             | **REQUIRED** | DKIM verification result Must contain a lower-case string where the value is one of the results defined in [@!RFC8601] Section 2.7.1.
+4 | human_result       | **OPTIONAL** | more descriptive information to the Domain Owner relating to evaluation failures.
+3 | spf                | **OPTIONAL** | There MAY be an optional "spf" element.
+4 | domain             | **REQUIRED** | The domain that was used during validation.
+4 | scope              | **OPTIONAL** | The source of the domain used during validation.  Must contain "mfrom" as it is the only valid value.
+4 | result             | **REQUIRED** | SPF verification result.  Must contain a lower-case string where the value is one of the results defined in [@!RFC8601] Section 2.7.2.
+4 | human_result       | **OPTIONAL** | more descriptive information to the Domain Owner relating to evaluation failures.
+2 | <any namespaced element> | **OPTIONAL** | Record level elements defined by an extension.  Such elements will be namespaced.  Extensions may cause other elements to be added.
+Table: Contents of the XML file
+
+policy_evaluated: Must contain three elements, in order: "disposition", "dkim",
+and "spf", then one or more OPTIONAL "reason" elements.
+
+spf/dkim: **MUST** be the evaluated values as they relate to DMARC, not the
+values the receiver may have used when overriding the policy.
+
+Note: If validation is attempted for any DKIM signature, the results
+**MUST** be included in the report (within reason, see "DKIM
+Signatures in Aggregate Reports" below for handling numerous
+signatures).
+
 ### Handling Domains in Reports
 
 In the same report, there **MUST** be a single Policy Domain, though there could be
