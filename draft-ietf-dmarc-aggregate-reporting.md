@@ -154,7 +154,7 @@ in order: "version", "report_metadata", "policy_published",
 
 2. "report_metadata": **REQUIRED**
 
-    Must contain Report generator metadata.
+    Report generator metadata.
 
     * "org_name": **REQUIRED**
 
@@ -192,7 +192,7 @@ in order: "version", "report_metadata", "policy_published",
 
     * "generator": **OPTIONAL**
 
-        Must contain the name and version of the software creating the report;
+        The name and version of the software creating the report;
         this helps the Report Consumer find out where to report bugs.
 
 3. "policy_published": **REQUIRED**
@@ -202,12 +202,12 @@ in order: "version", "report_metadata", "policy_published",
 
     * "domain": **REQUIRED**
 
-        Must contain the Policy Domain the report is about.
+        The Policy Domain the report is about.
 
     * "discovery_method": **OPTIONAL**
 
-        Must contain the method used to discover the DMARC Policy Record
-        during evaluation.  The available values are "psl" and "treewalk",
+        The method used to discover the DMARC Policy Record during
+        evaluation.  The available values are "psl" and "treewalk",
         where "psl" is the method from [@?RFC7489] and the "treewalk"
         is described in [@!I-D.ietf-dmarc-dmarcbis].
 
@@ -218,23 +218,23 @@ in order: "version", "report_metadata", "policy_published",
     * "sp": **REQUIRED**, and
     * "np": **OPTIONAL**
 
-        Must contain a valid policy action.
+        A valid policy action.
 
     * "fo": **OPTIONAL**
 
-        Must contain the value for the failure reporting options.
+        The value for the failure reporting options.
 
     * "adkim": **OPTIONAL**
 
-        Must contain the DKIM Identifier Alignment mode.
+        The DKIM Identifier Alignment mode.
 
     * "aspf": **OPTIONAL**
 
-        Must contain the SPF Identifier Alignment mode.
+        The SPF Identifier Alignment mode.
 
     * "testing": **OPTIONAL**
 
-        Must contain the value of the "t" tag.
+        The value of the "t" tag.
 
 4. "extension": **OPTIONAL**
 
@@ -256,9 +256,9 @@ in order: "version", "report_metadata", "policy_published",
 
     1. "row": **REQUIRED**
 
-        Must contain the details of the connecting system, and how many
-        e-mails was received from it, for that particular combination
-        of the policy evaluated.
+        The details of the connecting system, and how many e-mails
+        was received from it, for that particular combination of
+        the policy evaluated.
 
         **MUST** contain three elements, in order: "source_ip", "count",
         and "policy_evaluated"
@@ -281,7 +281,7 @@ in order: "version", "report_metadata", "policy_published",
 
             1. "disposition": **REQUIRED**
 
-                Must contain the result of applying the DMARC policy
+                The result of applying the DMARC policy
 
             2. "dkim": **REQUIRED**, and
             3. "spf": **REQUIRED**
@@ -304,11 +304,11 @@ in order: "version", "report_metadata", "policy_published",
 
                 * "type": **REQUIRED**
 
-                    Must contain the reason the DMARC policy was overridden.
+                    The reason the DMARC policy was overridden.
 
                 * "comment": **OPTIONAL**
 
-                    Must contain further details if available.
+                    Further details if available.
 
     2. "identifiers": **REQUIRED**
 
@@ -317,21 +317,21 @@ in order: "version", "report_metadata", "policy_published",
 
         * "header_from": **REQUIRED**
 
-            Must contain the RFC5322.From domain from the message.
+            The RFC5322.From domain from the message.
 
         * "envelope_from": **OPTIONAL**
 
-            Must contain the RFC5321.MailFrom domain that the SPF check has
-            been applied to.  This element MAY be existing but empty if the
+            The RFC5321.MailFrom domain that the SPF check has been
+            applied to.  This element MAY be existing but empty if the
             message had a null reverse-path ([@!RFC5321], Section 4.5.5).
 
         * "envelope_to": **OPTIONAL**
 
-            Must contain the RFC5321.RcptTo domain from the message.
+            The RFC5321.RcptTo domain from the message.
 
     3. "auth_results": **REQUIRED**
 
-        Must contain the data related to authenticating the messages
+        The data related to authenticating the messages
         associated with this sending IP address.
 
         Contains, in order, an optional unlimited number of "dkim" elements,
@@ -361,12 +361,12 @@ in order: "version", "report_metadata", "policy_published",
 
                 The DKIM verification result
 
-                Must contain a lower-case string where the value is one
+                A lower-case string where the value is one
                 of the results defined in [@!RFC8601] Section 2.7.1.
 
             * "human_result": **OPTIONAL**
 
-                Must contain more descriptive information to the Domain
+                More descriptive information to the Domain
                 Owner regarding evaluation failures.
 
         * "spf": **OPTIONAL**
@@ -390,12 +390,12 @@ in order: "version", "report_metadata", "policy_published",
 
                 The SPF verification result.
 
-                Must contain a lower-case string where the value is one
+                A lower-case string where the value is one
                 of the results defined in [@!RFC8601] Section 2.7.2.
 
             * "human_result": **OPTIONAL**
 
-                Must contain more descriptive information to the Domain
+                More descriptive information to the Domain
                 Owner regarding evaluation failures.
 
     4. <any namespaced element>: **OPTIONAL**
