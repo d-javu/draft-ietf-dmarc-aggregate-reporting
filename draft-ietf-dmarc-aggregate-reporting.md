@@ -236,6 +236,10 @@ in order: "version", "report_metadata", "policy_published",
     This element contains all the authentication results that were
     evaluated by the receiving system for the given set of messages.
 
+    Contains, in order: "row", "identifiers", "auth_results".  Use of
+    extensions may cause other elements to be added to the end of the
+    record.
+
     One record per (IP, result, IDs Auths) tuples.
 
     1. "row": **REQUIRED**
@@ -259,6 +263,9 @@ in order: "version", "report_metadata", "policy_published",
             fails and the policy applied does not match the Policy
             Domain's configured policy, the "reason" element **MUST**
             be included.
+
+            Contains three elements, in order: "disposition", "dkim",
+            and "spf", then zero or more "reason" elements.
 
             1. "disposition": **REQUIRED**
 
@@ -311,6 +318,9 @@ in order: "version", "report_metadata", "policy_published",
 
         The data related to authenticating the messages
         associated with this sending IP address.
+
+        Contains, in order, an optional unlimited number of "dkim" elements,
+        then an optional "spf" element.
 
         This element contains DKIM and SPF results,
         uninterpreted with respect to DMARC.
